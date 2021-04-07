@@ -1,0 +1,96 @@
+Draghicescu Adrian 331CB
+                        Tema 2 APD
+
+    Am modificat toti timpii de asteptare impartiindu i la 10 inclusiv
+executionTime din Pedestrians pentru ca checker-ul sa ruleze mai repede
+
+Am modificat interfata IntersectionHandler adougand la metoda handle throws
+InterruptedException, BrokenBarrierException pentr a evita sa pun foarte
+multe blocuri try catch in IntersectionHandlerFactory
+
+    Toate mesajele sunt printate in metoda handle() mai putin mesajele care
+tin de benzi de la cerinta 9, complex_maintenance unde sunt printate in medoda
+run() din clasa NewLane.
+
+    Pentru ultimele doua cerinte am adugat o interfata Lane (ce extinde
+Runnable) care e implementat de 2 clase NewLane si RailroadLane pentru ultimele
+doua cerinte.
+
+simple_semaphore:
+    Nimic de zis :)
+
+simple_n_roundabout:
+    Am folosit un semafor pentru a nu putea mai mult de N masini sa intre in
+intersectie. Mesajele de enter si exist sunt intre acquire() si release()
+pentru a di sigur ca nu apuca alt thread sa printeze mesajul de entered inainte
+un thread care a dat release la semafor sa apuce sa printeze meajul de exit.
+
+simple_strict_1_car_roundabout:
+    In clasa SimpleStrict1CarRoundabout am un vector lanes de Object cu atatea
+elemnte cate sensuri are sensul giratoriu. Fiecare masina cu directia initiala
+i va face synchronized pe lanes[i] inauntru caruia printeaza mesakele de
+entered si exited si asteapta timpul necesar parcurgerii intersectiei.
+
+simple_strict_1_car_roundabout:
+    In clasa SimpleStrictXCarRoundabout aveam:
+- o bariera arrived la care asteapta toate masinile dupa ce au afisat mesajul
+    de "reached the roundabout"
+- cate un semafor pentru fiecare banda, ficare masina va da acquire() pe
+    semaforul benzii sale inainte sa afiseze mesajul de "was selected to enter"
+    si la care da release() dupa ce afisaza mesajul de exited
+- o bariera enterd cu (X * numLanes) permits la care asteapta masinile dupa ce
+au afisat mesajul de "was selected" pentru a nu ajunge ca o masina sa printeze
+ca a intrat in intersetie inainte ca toate cele X masini sa fie selectate pe
+fiecare banda si sa printeze mesajul corespunzator.
+
+priority_intersection:
+    Nu am folosit numarul de masini fara prioritate.
+    in clasa PriorityIntersection avem un semafor cu atatea permits cate masini
+cu prioritate sunt.
+    Fiecare masina cu prioritate ia un singur permit si il
+returenaza dupa ce asteata timpul necasra parcurgerii intersectiei si dupa ce
+afiseaza mesajele corespunzatoare, a. i. pot intra toate masini cu prioritate
+in ac timp (daca este cazul).
+    Fiecare masina fara prioritate inearca sa ia toate permisele si le da
+drumul imediat (dupa ce afiseaza mesajele) a. i. nu poata intra daca in
+intersectie mai este si alta masina (inclusiv un fara prioirtate)
+
+crosswalk:
+    In clasa Crosswalk avem un semafor cu 1 permis.
+    Am moficat un pic metoda run din Pedestrians sa dea acquire() pe semafor
+dupa ce sa ajuns la sumarul maxim de pietoni si release() dupa sleep().
+    Fiecare masina exeuta un while pana cand se termina executia din
+Pedestrians si pana cand ultima stare a semaforului este verde.
+    Daca Main.pedestrians.isPass() este adevarat se printeaza mesajul
+corespunzator si se asteapta ca pedestrians sa dea release() pe semafor.
+
+simple_maintenance:
+    In clasa SimpleMaintenance aveam cate o bariera si un semafor pentru
+fiecare banda, semaforul penru banda 0 incepe cu X permise, iar cel pentru
+banda 1 cu 0.
+    Fiecare masina apeala acquire() pe semaforul benzii sale si asteapta la
+bariera banzii sale ca toate cele X masini sa fie selectate si apeleaza
+release() pe semaforul benzii celeilate, a. i. toate masinile dintr-un grup
+de trecere sa astepte ca toate msainile din grupul precedent sa fi trecut.
+
+complex_maintenance:
+    Fiecare thread initializat cu Car se aduga in LinkedBlockingQueue-ul benzii
+(NewLane) de pe care vine si apealeaza wait() pe car
+    In clasa NewLane avem un TreeMap<Integer, LinkedBlockingQueue<Car>> cu rol
+de coada de benzi, benzile fiind reprezentate ca cozi de masini. Se ia fiecare
+coada de masini la rand si notifica masinile sa porneasca, pe masura ce o banda
+veche se goleste sau ramane fara permise se trece la urmatoarea.
+
+(nu era nevoie sa folosesc LinkedBlockingQueue avand in vedere ca am folosit
+syncronized la fiecare alpel am metodei Add())
+
+railroad:
+    Fiecare thread initializat cu Car se aduga in LinkedBlockingQueue-ul benzii
+(RailroadLane) de pe care vine si apealeaza wait() pe car
+    Dupa ce trece trenul (se trece de a doua bariera) fiecare thread provenit
+din RailroadLane apeleaza notify() pe fiecare obiect de tip Car din queue.
+
+
+
+
+
